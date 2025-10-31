@@ -1,6 +1,6 @@
 # Unique Greek Words from a text.
 
-A programm for getting a list with unique Greek Words from a Greek text.
+A programm for getting a list with unique Greek Words from a text.
 
 ## How to use it
 
