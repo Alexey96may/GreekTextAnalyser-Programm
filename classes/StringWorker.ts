@@ -4,8 +4,10 @@ import * as fs from "fs";
 import { Sort } from "../types/Sort";
 
 export class StringWorker {
+    /** Array container for all the wors  */
     allWordsArr: string[];
 
+    /** Greek vocals */
     vocals: string[] = [
         "α",
         "ά",
@@ -23,6 +25,7 @@ export class StringWorker {
         "ώ",
     ];
 
+    /** Greek word exeptions that will not go to the final list */
     exept: string[] = [
         "φου",
         "χει",
@@ -70,6 +73,7 @@ export class StringWorker {
         "αμ",
     ];
 
+    /** Greek articles*/
     articles: string[] = [
         "ο",
         "η",
@@ -92,6 +96,7 @@ export class StringWorker {
         "μιας",
     ];
 
+    /** Greek conjunctions*/
     conjunc: string[] = [
         "αν",
         "ενώ",
@@ -134,6 +139,7 @@ export class StringWorker {
         "ώστε",
     ];
 
+    /** Greek prepositions*/
     prepos: string[] = [
         "με",
         "σε",
@@ -162,6 +168,7 @@ export class StringWorker {
         "μεταξύ",
     ];
 
+    /** Greek pronoms*/
     pronom: string[] = [
         "εγώ",
         "εσύ",
@@ -225,6 +232,7 @@ export class StringWorker {
         "όλο",
     ];
 
+    /** Greek noun endings for checking*/
     nounEndings: string[] = [
         "η",
         "ή",
@@ -278,6 +286,7 @@ export class StringWorker {
         "των",
     ];
 
+    /** Greek adjective endings for checking*/
     adjectEndings: string[] = [
         "α",
         "ά",
@@ -305,6 +314,7 @@ export class StringWorker {
         "ούς",
     ];
 
+    /** Greek proverb endings for checking*/
     proverbEndings: string[] = [
         "α",
         "ά",
@@ -318,6 +328,7 @@ export class StringWorker {
         "η",
     ];
 
+    /** Greek verb endings for checking*/
     verbEndings: string[] = [
         "ω",
         "ώ",
@@ -350,10 +361,24 @@ export class StringWorker {
         "σαμε",
     ];
 
+    /**
+     * StringWorker constructor
+     * @constructor
+     * @param {string} string - The sentence in Greek
+     */
     constructor(string: string) {
         this.allWordsArr = this.cleanWords(string);
     }
 
+    /**
+     * Get word list from the text.
+     * @param {"desc" | "asc" | "name"} dir - Sort direction
+     * @param {boolean} simple - Full word list or a simple one (only one word with the same word base), may work incorrect!
+     * @param {"txt" | "console" | "get"} mode - The ways to get the word list.
+     * @param {"number | undefined"} wordCount - Count of words in the final word list.
+     * @returns {Array} Array with objects where "base: string; words: object; rank: number"
+     }
+     */
     getList(
         dir: Sort = "desc",
         simple: boolean = true,
@@ -392,7 +417,7 @@ export class StringWorker {
         }
 
         if (mode === "txt") {
-            fs.writeFile(`./file${simpleMode}.txt`, result, (err) =>
+            fs.writeFile(`./dist/file${simpleMode}.txt`, result, (err) =>
                 console.error(err)
             );
         }
@@ -404,6 +429,12 @@ export class StringWorker {
         return unqArr;
     }
 
+    /**
+     * Clean Words in your text. Get rid of nonGreek words, symbols and unick letters.
+     * @param {string} str - Your sentence
+     * @returns {Array | Error} Array with clean words in Lower case or Error if there is no proper words in the text
+     }
+     */
     cleanWords(str: string): string[] | never {
         const arr = str.split(/[\s,.]/);
         const cleanArr: string[] = [];
@@ -427,6 +458,11 @@ export class StringWorker {
         }
     }
 
+    /**
+     * Get unique words from the text. Get rid of nonGreek words, symbols and unick letters.
+     * @returns {Object} object where the key is a word and the value is a number with word frequency in the text
+     }
+     */
     getUniqueWords(): Word {
         let newObj: Word = {};
 
@@ -441,6 +477,70 @@ export class StringWorker {
         return newObj;
     }
 
+    /**
+     * Define a word ending.
+     * @param {string} word - A Greek word
+     * @returns {string} The word ending
+     }
+     */
+    wordEnding(word: string): string {
+        let wordEnding = "";
+
+        for (let i = word.length - 1; i > 1; i--) {
+            //If it`s a vowel: add it
+            if (this.vocals.includes(word[i])) {
+                wordEnding += word[i];
+
+                //If it`s a consonant: check it
+            } else {
+                //If a consonant is going first: add it
+                if (!wordEnding) {
+                    wordEnding += word[i];
+
+                    //If a consonant is NOT going first: check the new ending
+                } else {
+                    let wordEndingCheck = wordEnding + word[i];
+                    wordEndingCheck = wordEndingCheck
+                        .split("")
+                        .reverse()
+                        .join("");
+
+                    //If the new ending is in the conjuction endigs: add the consonant
+                    if (this.#checkEnding(wordEndingCheck)) {
+                        wordEnding += word[i];
+
+                        //If the new ending is NOT in the conjuction endigs: get the old inding and stop the function
+                    } else {
+                        wordEnding = wordEnding.split("").reverse().join("");
+                        break;
+                    }
+                }
+            }
+        }
+
+        return wordEnding;
+    }
+
+    /**
+     * Define a word base.
+     * @param {string} word - A Greek word
+     * @param {string} wordEnding - The word ending
+     * @returns {string} The word base
+     }
+     */
+    wordBase(word: string, wordEnding: string): string {
+        let wordBaseNumber = wordEnding.length;
+        let wordBase = word.slice(0, -wordBaseNumber);
+
+        return wordBase;
+    }
+
+    /**
+     * Word censorship.
+     * @param {string} word - The word
+     * @returns {bollean} bollean depends on the word have passed the censorship
+     }
+     */
     #censorship(word: string): boolean {
         if (this.articles.includes(word.toLowerCase().trim())) {
             return false;
@@ -461,6 +561,12 @@ export class StringWorker {
         return true;
     }
 
+    /**
+     * Sort Array.
+     * @param {"desc" | "asc" | "name"} dir - Sor direction
+     * @returns {Array} Array with objects where "base: string; words: object; rank: number"
+     }
+     */
     #sortArray(dir: Sort): WordStructure[] {
         let unqArr = this.#compactWords(Object.entries(this.getUniqueWords()));
 
@@ -486,6 +592,12 @@ export class StringWorker {
         return unqArr;
     }
 
+    /**
+     * Check the word ending.
+     * @param {string} ending - Word ending
+     * @returns {bollean} bollean depends on the ending is in the greek ending arrays.
+     }
+     */
     #checkEnding(ending: string): boolean {
         let wordEnding = ending;
 
@@ -508,6 +620,12 @@ export class StringWorker {
         return false;
     }
 
+    /**
+     * Create compact full array with word bases and ranks.
+     * @param {Array} arr - Array of word arrays where "[string, number]"
+     * @returns {Array} Array with objects where "base: string; words: object; rank: number"
+     }
+     */
     #compactWords(arr: Array<[string, number]>): Array<WordStructure> {
         const wordBases: string[] = [];
         const compactArr: Array<WordStructure> = [];
@@ -515,8 +633,8 @@ export class StringWorker {
         arr.forEach((item) => {
             let word = item[0];
             let rank = item[1];
-            const wordEnding = this.#wordEnding(word);
-            const wordBase = this.#wordBase(word, wordEnding);
+            const wordEnding = this.wordEnding(word);
+            const wordBase = this.wordBase(word, wordEnding);
 
             const wordsObj: Word = {};
             wordsObj[word] = rank;
@@ -541,50 +659,5 @@ export class StringWorker {
         });
 
         return compactArr;
-    }
-
-    #wordEnding(word: string): string {
-        let wordEnding = "";
-
-        for (let i = word.length - 1; i > 1; i--) {
-            //Если гласный: добавляем его
-            if (this.vocals.includes(word[i])) {
-                wordEnding += word[i];
-
-                //Если не гласный: проверяем его
-            } else {
-                //Если согласный первый: добавим его.
-                if (!wordEnding) {
-                    wordEnding += word[i];
-
-                    //Если согласный не первый: проверим на новое окончание
-                } else {
-                    let wordEndingCheck = wordEnding + word[i];
-                    wordEndingCheck = wordEndingCheck
-                        .split("")
-                        .reverse()
-                        .join("");
-
-                    //Если новое окончание есть в окончаниях спряжений и склонений: добавим букву
-                    if (this.#checkEnding(wordEndingCheck)) {
-                        wordEnding += word[i];
-
-                        //Если буквы нет в окончаниях спряжений и склонений: получаем окончание без согласного и прекращаем работу функции
-                    } else {
-                        wordEnding = wordEnding.split("").reverse().join("");
-                        break;
-                    }
-                }
-            }
-        }
-
-        return wordEnding;
-    }
-
-    #wordBase(word: string, wordEnding: string): string {
-        let wordBaseNumber = wordEnding.length;
-        let wordBase = word.slice(0, -wordBaseNumber);
-
-        return wordBase;
     }
 }
