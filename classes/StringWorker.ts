@@ -376,7 +376,7 @@ export class StringWorker {
      * @param {boolean} simple - Full word list or a simple one (only one word with the same word base), may work incorrect!
      * @param {"txt" | "console" | "get"} mode - The ways to get the word list.
      * @param {"number | undefined"} wordCount - Count of words in the final word list.
-     * @returns {Array} Array with objects where "base: string; words: object; rank: number"
+     * @returns {Array} Array with objects where "base: string; words: object; rank: number" OR if Simple mode: Array with arrays, where [0] = word, [1] = number;
      }
      */
     getList(
@@ -384,9 +384,10 @@ export class StringWorker {
         simple: boolean = true,
         mode: "txt" | "console" | "get" = "txt",
         wordCount?: number | undefined
-    ): WordStructure[] {
+    ): WordStructure[] | Array<[string, number]> {
         let unqArr = this.#sortArray(dir);
         let result = "";
+        let simpleArr: Array<[string, number]> = [];
         let simpleMode = simple ? "-simple" : "-full";
 
         if (wordCount) {
@@ -401,6 +402,8 @@ export class StringWorker {
             unqArr.forEach((item) => {
                 let word = Object.keys(item.words)[0];
                 let rank = item.rank;
+
+                simpleArr.push([word, rank]);
 
                 result += "\n\t" + word + ": " + rank + ";";
             });
@@ -417,16 +420,18 @@ export class StringWorker {
         }
 
         if (mode === "txt") {
-            fs.writeFile(`./dist/file${simpleMode}.txt`, result, (err) =>
-                console.error(err)
-            );
+            fs.writeFileSync(`./dist/file${simpleMode}.txt`, result);
         }
 
         if (mode === "console") {
             console.log(result);
         }
 
-        return unqArr;
+        if (simple) {
+            return simpleArr;
+        } else {
+            return unqArr;
+        }
     }
 
     /**
