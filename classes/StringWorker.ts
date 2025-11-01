@@ -399,16 +399,18 @@ export class StringWorker {
         result += "Total number of words: " + unqArr.length + ".\n\t";
 
         if (simple) {
-            unqArr.forEach((item) => {
-                let word = Object.keys(item.words)[0];
-                let rank = item.rank;
+            unqArr.forEach((item, index) => {
+                if (index < wordCount) {
+                    let word = Object.keys(item.words)[0];
+                    let rank = item.rank;
 
-                simpleArr.push([word, rank]);
+                    simpleArr.push([word, rank]);
 
-                result += "\n\t" + word + ": " + rank + ";";
+                    result += "\n\t" + word + ": " + rank + ";";
+                }
             });
         } else {
-            for (let i = 0; i < unqArr.length; i++) {
+            for (let i = 0; i < wordCount; i++) {
                 result += "\n\t" + unqArr[i].base + ": " + unqArr[i].rank + ";";
 
                 let arr = Object.entries(unqArr[i].words);

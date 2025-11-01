@@ -17,6 +17,6 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true
     },
-    "include": ["**/*ts", "**/classes/*.ts"],
-    "exclude": ["./node_modules", "./tests/**/*ts", "./types/**/*ts"]
+    "include": ["**/main.ts", "**/classes/*.ts"],
+    "exclude": ["./node_modules", "./tests/**/*.ts", "./types/**/*.ts"]
 }

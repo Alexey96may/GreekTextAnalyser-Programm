@@ -360,12 +360,13 @@ export class StringWorker {
      * @param {boolean} simple - Full word list or a simple one (only one word with the same word base), may work incorrect!
      * @param {"txt" | "console" | "get"} mode - The ways to get the word list.
      * @param {"number | undefined"} wordCount - Count of words in the final word list.
-     * @returns {Array} Array with objects where "base: string; words: object; rank: number"
+     * @returns {Array} Array with objects where "base: string; words: object; rank: number" OR if Simple mode: Array with arrays, where [0] = word, [1] = number;
      }
      */
     getList(dir = "desc", simple = true, mode = "txt", wordCount) {
         let unqArr = this.#sortArray(dir);
         let result = "";
+        let simpleArr = [];
         let simpleMode = simple ? "-simple" : "-full";
         if (wordCount) {
             wordCount = wordCount > unqArr.length ? unqArr.length : wordCount;
@@ -375,14 +376,17 @@ export class StringWorker {
         }
         result += "Total number of words: " + unqArr.length + ".\n\t";
         if (simple) {
-            unqArr.forEach((item) => {
-                let word = Object.keys(item.words)[0];
-                let rank = item.rank;
-                result += "\n\t" + word + ": " + rank + ";";
+            unqArr.forEach((item, index) => {
+                if (index < wordCount) {
+                    let word = Object.keys(item.words)[0];
+                    let rank = item.rank;
+                    simpleArr.push([word, rank]);
+                    result += "\n\t" + word + ": " + rank + ";";
+                }
             });
         }
         else {
-            for (let i = 0; i < unqArr.length; i++) {
+            for (let i = 0; i < wordCount; i++) {
                 result += "\n\t" + unqArr[i].base + ": " + unqArr[i].rank + ";";
                 let arr = Object.entries(unqArr[i].words);
                 for (let u = 0; u < arr.length; u++) {
@@ -391,12 +395,17 @@ export class StringWorker {
             }
         }
         if (mode === "txt") {
-            fs.writeFile(`./dist/file${simpleMode}.txt`, result, (err) => console.error(err));
+            fs.writeFileSync(`./dist/file${simpleMode}.txt`, result);
         }
         if (mode === "console") {
             console.log(result);
         }
-        return unqArr;
+        if (simple) {
+            return simpleArr;
+        }
+        else {
+            return unqArr;
+        }
     }
     /**
      * Clean Words in your text. Get rid of nonGreek words, symbols and unick letters.
